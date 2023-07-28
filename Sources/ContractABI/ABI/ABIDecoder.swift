@@ -112,7 +112,7 @@ public struct ABIDecoder {
                 let length = Int(output.type.staticPartLength) * 2
 
                 let startIndex = currentIndex
-                let endIndex = hexString.index(startIndex, offsetBy: length)
+                let endIndex = hexString.index(startIndex, offsetBy: min(length, hexString.count))
                 let subHex = String(hexString[startIndex..<endIndex])
 
                 returnDictionary[output.name] = try decodeType(type: output.type, hexString: subHex, components: output.components)

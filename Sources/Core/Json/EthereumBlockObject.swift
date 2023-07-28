@@ -11,6 +11,8 @@ import Foundation
  * A block as returned by an Ethereum node.
  */
 public struct EthereumBlockObject: Codable {
+    
+    public let baseFeePerGas: EthereumQuantity?
 
     /// The block number. nil when its a pending block.
     public let number: EthereumQuantity?
@@ -32,7 +34,7 @@ public struct EthereumBlockObject: Codable {
 
     /// 32 Bytes - the root of the transaction trie of the block.
     public let transactionsRoot: EthereumData
-
+    
     /// 32 Bytes - the root of the final state trie of the block.
     public let stateRoot: EthereumData
 
