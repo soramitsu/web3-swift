@@ -29,7 +29,7 @@ public protocol ERC721Contract: ERC165Contract {
 public protocol AnnotatedERC721: EthereumContract {
     func name() -> SolidityInvocation
     func symbol() -> SolidityInvocation
-    func tokenURI() -> SolidityInvocation
+    func tokenURI(tokenId: BigUInt) -> SolidityInvocation
 }
 
 /// ERC721 Enumeration Extension
@@ -40,7 +40,7 @@ public protocol EnumeratedERC721: EthereumContract {
 }
 
 /// Generic implementation class. Use directly, or subclass to conveniently add your contract's events or methods.
-open class GenericERC721Contract: StaticContract, ERC721Contract {
+open class GenericERC721Contract: StaticContract, ERC721Contract, AnnotatedERC721 {
     public var address: EthereumAddress?
     public let eth: Web3.Eth
     
