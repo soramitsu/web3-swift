@@ -52,7 +52,7 @@ public struct Web3HttpProvider: Web3Provider {
                 return
             }
 
-            var req = URLRequest(url: url)
+            var req = URLRequest(url: url, timeoutInterval: 10)
             req.httpMethod = "POST"
             req.httpBody = body
             for (k, v) in type(of: self).headers {
