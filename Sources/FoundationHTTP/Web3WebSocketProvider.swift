@@ -341,6 +341,6 @@ public class Web3WebSocketProvider: Web3Provider, Web3BidirectionalProvider {
             self.webSocket = ws
 
             self.registerWebSocketListeners()
-        }.wait()
+        }
     }
 }
