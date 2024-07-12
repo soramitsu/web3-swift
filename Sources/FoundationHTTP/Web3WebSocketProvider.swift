@@ -315,7 +315,7 @@ public class Web3WebSocketProvider: Web3Provider, Web3BidirectionalProvider {
                 return
             }
 
-            if !self.closed && self.webSocket.isClosed == true {
+            if !self.closed && self.webSocket?.isClosed == true {
                 self.reconnectQueue.asyncAfter(deadline: DispatchTime(uptimeNanoseconds: DispatchTime.now().uptimeNanoseconds + 100_000_000)) {
                     try? self.reconnect()
                 }
