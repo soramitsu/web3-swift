@@ -23,7 +23,7 @@ public class Web3WebSocketProvider: Web3Provider, Web3BidirectionalProvider {
     public let timeoutNanoSeconds: UInt64
 
     private let wsEventLoopGroup: EventLoopGroup
-    public private(set) var webSocket: WebSocket!
+    public private(set) var webSocket: WebSocket?
 
     // Stores ids and notification groups
     private let pendingRequests: SynchronizedDictionary<Int, (timeoutItem: DispatchWorkItem, responseCompletion: (_ response: String?) -> Void)> = [:]
@@ -187,9 +187,13 @@ public class Web3WebSocketProvider: Web3Provider, Web3BidirectionalProvider {
                 return
             }
         }
+        
+        guard let webSocket else {
+            return
+        }
 
         // Send Request through WebSocket once the Promise was set
-        self.webSocket.send(String(data: body, encoding: .utf8) ?? "", promise: promise)
+        webSocket.send(String(data: body, encoding: .utf8) ?? "", promise: promise)
     }
     
     // MARK: - Web3BidirectionalProvider
@@ -277,7 +281,7 @@ public class Web3WebSocketProvider: Web3Provider, Web3BidirectionalProvider {
 
     private func registerWebSocketListeners() {
         // Receive response
-        webSocket.onText { [weak self] ws, string in
+        webSocket?.onText { [weak self] ws, string in
             guard let self else {
                 return
             }
@@ -306,12 +310,12 @@ public class Web3WebSocketProvider: Web3Provider, Web3BidirectionalProvider {
         }
 
         // Handle close
-        webSocket.onClose.whenComplete { [weak self] result in
+        webSocket?.onClose.whenComplete { [weak self] result in
             guard let self else {
                 return
             }
 
-            if !self.closed && self.webSocket.isClosed {
+            if !self.closed && self.webSocket.isClosed == true {
                 self.reconnectQueue.asyncAfter(deadline: DispatchTime(uptimeNanoseconds: DispatchTime.now().uptimeNanoseconds + 100_000_000)) {
                     try? self.reconnect()
                 }
