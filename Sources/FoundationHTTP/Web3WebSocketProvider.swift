@@ -23,7 +23,7 @@ public class Web3WebSocketProvider: Web3Provider, Web3BidirectionalProvider {
     public let timeoutNanoSeconds: UInt64
 
     private let wsEventLoopGroup: EventLoopGroup
-    public private(set) var webSocket: WebSocket?
+    public private(set) var webSocket: WebSocket!
 
     // Stores ids and notification groups
     private let pendingRequests: SynchronizedDictionary<Int, (timeoutItem: DispatchWorkItem, responseCompletion: (_ response: String?) -> Void)> = [:]
@@ -96,14 +96,7 @@ public class Web3WebSocketProvider: Web3Provider, Web3BidirectionalProvider {
 
     deinit {
         closed = true
-        
-        if let websocket = webSocket {
-            _ = websocket.close(code: .goingAway)
-            // As described in https://github.com/apple/swift-nio/issues/2371
-            try? wsEventLoopGroup.syncShutdownGracefully()
-
-        }
-
+        _ = webSocket.close(code: .goingAway)
     }
 
     // MARK: - Web3Provider
@@ -187,13 +180,9 @@ public class Web3WebSocketProvider: Web3Provider, Web3BidirectionalProvider {
                 return
             }
         }
-        
-        guard let webSocket else {
-            return
-        }
 
         // Send Request through WebSocket once the Promise was set
-        webSocket.send(String(data: body, encoding: .utf8) ?? "", promise: promise)
+        self.webSocket.send(String(data: body, encoding: .utf8) ?? "", promise: promise)
     }
     
     // MARK: - Web3BidirectionalProvider
@@ -281,11 +270,7 @@ public class Web3WebSocketProvider: Web3Provider, Web3BidirectionalProvider {
 
     private func registerWebSocketListeners() {
         // Receive response
-        webSocket?.onText { [weak self] ws, string in
-            guard let self else {
-                return
-            }
-
+        webSocket.onText { ws, string in
             self.receiveQueue.async {
                 guard let data = string.data(using: .utf8) else {
                     return
@@ -310,12 +295,8 @@ public class Web3WebSocketProvider: Web3Provider, Web3BidirectionalProvider {
         }
 
         // Handle close
-        webSocket?.onClose.whenComplete { [weak self] result in
-            guard let self else {
-                return
-            }
-
-            if !self.closed && self.webSocket?.isClosed == true {
+        webSocket.onClose.whenComplete { result in
+            if !self.closed && self.webSocket.isClosed {
                 self.reconnectQueue.asyncAfter(deadline: DispatchTime(uptimeNanoseconds: DispatchTime.now().uptimeNanoseconds + 100_000_000)) {
                     try? self.reconnect()
                 }
@@ -345,6 +326,6 @@ public class Web3WebSocketProvider: Web3Provider, Web3BidirectionalProvider {
             self.webSocket = ws
 
             self.registerWebSocketListeners()
-        }
+        }.wait()
     }
 }
